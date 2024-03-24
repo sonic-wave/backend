@@ -1,8 +1,8 @@
 class Ticket {
-    constructor(id, name, fullDesription) {
+    constructor(id, name, fullDescription) {
         this.id = id;
         this.name = name;
-        this.fullDesription = fullDesription;
+        this.fullDescription = fullDescription;
         this.status = false;
         this.created = this.createDate();
     }

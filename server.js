@@ -1,6 +1,8 @@
 const http = require('http');
 const Koa = require('koa');
-const { koaBody } = require('koa-body');
+const {
+  koaBody
+} = require('koa-body');
 const app = new Koa();
 const uuid = require('uuid');
 const Ticket = require('./Ticket');
@@ -8,64 +10,34 @@ const Ticket = require('./Ticket');
 let tickets = [];
 
 app.use(koaBody({
-    urlencoded: true,
-    multipart: true,
+  urlencoded: true,
+  multipart: true,
 }));
 
 app.use((ctx, next) => {
-    if (ctx.request.method !== 'OPTIONS') {
-      next();
-  
-      return;
-    }
-  
-    ctx.response.set('Access-Control-Allow-Origin', '*');
-  
-    ctx.response.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST');
-  
-    ctx.response.status = 204;
-  });
+  if (ctx.request.method !== 'OPTIONS') {
+    next();
 
-// app.use((ctx, next) => {
-//     if (ctx.request.method !== 'POST') {
-//         next();
-    
-//         return;
-//       }
+    return;
+  }
 
-//     console.log(ctx.request.body);
+  ctx.response.set('Access-Control-Allow-Origin', '*');
 
-//     const { name, phone } = ctx.request.body;
+  ctx.response.set('Access-Control-Allow-Methods', 'DELETE, PUT, PATCH, GET, POST');
 
-//     ctx.response.set('Access-Control-Allow-Origin', '*');
-
-//     if (subscriptions.some(sub => sub.phone === phone)) {
-//         ctx.response.status = 400;
-//         ctx.response.body = 'subscription exists';
-        
-//         return;
-//     }
-
-//     subscriptions.push({ name, phone });
-
-//     ctx.response.body = 'server response';
-
-//     next();
-// })
+  ctx.response.status = 204;
+});
 
 app.use((ctx, next) => {
   if (ctx.request.method !== 'POST') {
-      next();
-  
-      return;
-    }
+    next();
 
-  console.log(ctx.request.body);
-  console.log(ctx.request.url);
+    return;
+  }
 
   const id = uuid.v4();
 
-  const  url = ctx.request.url;
+  const url = ctx.request.url;
   const method = url.split("/?method=")[1];
 
 
@@ -76,12 +48,17 @@ app.use((ctx, next) => {
 
     tickets.push(ticket);
 
-    console.log(tickets)
-
     ctx.response.body = ticket;
   }
 
   if (method === 'editTicket') {
+    let result = tickets.find(function (obj) {
+      return obj.id === ctx.request.body.id;
+    });
+
+    result.name = ctx.request.body.shortDescription;
+    result.fullDescription = ctx.request.body.fullDescription;
+
     ctx.response.body = {
       'shortDescription': ctx.request.body.shortDescription,
       'fullDescription': ctx.request.body.fullDescription
@@ -100,6 +77,23 @@ app.use((ctx, next) => {
 
   ctx.response.set('Access-Control-Allow-Origin', '*');
 
+  const id = ctx.request.url.split('/')[1]; 
+
+  if (id) {
+    let index = tickets.findIndex(function (obj) {
+      return obj.id === id;
+    });
+
+    if (index !== -1) {
+      tickets.splice(index, 1);
+      ctx.response.status = 204; 
+    } else {
+      ctx.response.status = 404; 
+    }
+  } else {
+    ctx.response.status = 400;
+  }
+
   next();
 });
 
@@ -108,12 +102,11 @@ const server = http.createServer(app.callback());
 const port = 7070;
 
 server.listen(port, (err) => {
-    if (err) {
-        console.log(err);
-        return;
-    } 
+  if (err) {
+    console.log(err);
+    return;
+  }
 
-    console.log('Server is listening to ' + port)
+  console.log('Server is listening to ' + port)
 
 })
-
