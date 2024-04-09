@@ -51,12 +51,24 @@ app.use((ctx, next) => {
     ctx.response.body = ticket;
   }
 
+  if (method === 'editStatus') {
+    let result = tickets.find(function (obj) {
+      return obj.id === ctx.request.body.id;
+    });
+
+    result.status = ctx.request.body.status;
+
+    ctx.response.body = {
+      'status': ctx.request.body.status,
+    }
+  }
+
   if (method === 'editTicket') {
     let result = tickets.find(function (obj) {
       return obj.id === ctx.request.body.id;
     });
 
-    result.name = ctx.request.body.shortDescription;
+    result.status = ctx.request.body.shortDescription;
     result.fullDescription = ctx.request.body.fullDescription;
 
     ctx.response.body = {
